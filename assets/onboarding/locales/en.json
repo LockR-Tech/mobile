@@ -58,7 +58,7 @@
     },
     "drone-tech-dispatch": {
       "title": "Drone dispatch",
-      "summary": "Dispatch tab: weather at the lockers, the pickup-jobs switch, stage filters and what you see when there are no orders."
+      "summary": "Dispatch tab: locker weather, pickup-job status from your shift, leg filters and the empty state."
     },
     "admin-maintenance": {
       "title": "Maintenance & device incidents",
@@ -206,7 +206,7 @@
     },
     "admin-order-detail": {
       "title": "Order details – main information",
-      "summary": "Order code, status strip, the customer-app view, milestones, fees, parcel and status history."
+      "summary": "Order code, status strip, order information by type (as in the customer app), fees, parcel and status history."
     },
     "admin-order-detail-side": {
       "title": "Order details – customer, locker, code, payment",
@@ -226,11 +226,7 @@
     },
     "admin-user-detail": {
       "title": "User profile",
-      "summary": "Editable personal details, avatar, roles, account, terms and the order, spending, wallet and points figures."
-    },
-    "admin-user-wallet": {
-      "title": "User wallet",
-      "summary": "See a user's balance and add or deduct wallet money with a reason."
+      "summary": "Editable personal details, avatar, roles, account, terms and the order, spending and points figures."
     },
     "admin-user-tab-orders": {
       "title": "Profile – activity tabs",
@@ -238,11 +234,7 @@
     },
     "admin-user-tab-payments": {
       "title": "Profile – Payments tab",
-      "summary": "All of the user's transactions, including top-ups; open a transaction right from the profile."
-    },
-    "admin-user-tab-wallet": {
-      "title": "Profile – Wallet tab",
-      "summary": "The user's wallet credit / debit history."
+      "summary": "All of the user's order payments; open a transaction right from the profile."
     },
     "admin-user-tab-loyalty": {
       "title": "Profile – Loyalty tab",
@@ -262,23 +254,7 @@
     },
     "admin-payment-detail": {
       "title": "Transaction details",
-      "summary": "Payment information, the related order, refunds, wallet movements and changing the transaction status."
-    },
-    "admin-payments-wallet": {
-      "title": "Payments – Wallet movements",
-      "summary": "Every wallet credit / debit of all customers, filtered by direction, source and date."
-    },
-    "admin-payments-withdrawals": {
-      "title": "Payments – Withdrawal requests",
-      "summary": "Customers withdraw wallet money to a bank; the admin transfers it and approves, or rejects."
-    },
-    "admin-withdrawal-approve": {
-      "title": "Approve a withdrawal",
-      "summary": "The dialog for confirming that a withdrawal has been transferred."
-    },
-    "admin-withdrawal-reject": {
-      "title": "Reject a withdrawal",
-      "summary": "The rejection dialog: enter a reason and the money returns to the customer's wallet."
+      "summary": "Payment information, the related order, refunds and changing the transaction status."
     },
     "admin-refunds-history": {
       "title": "Refunds – History",
@@ -545,8 +521,8 @@
       "summary": "Click your account name at the bottom of the left menu to open \"Settings\" or \"Logout\"."
     },
     "admin-preferences": {
-      "title": "Personal options",
-      "summary": "The \"Settings\" box (account menu at the bottom of the left menu): language, theme, on-screen guide and a Business rules shortcut."
+      "title": "Personal preferences",
+      "summary": "The \"Settings\" box (account menu at the bottom of the left menu): language, theme, map cache, on-screen guide, Business settings shortcut."
     },
     "admin-notifications": {
       "title": "Notification management",
@@ -710,7 +686,7 @@
     },
     "customer-vouchers": {
       "title": "My offers",
-      "summary": "Your voucher wallet: usable codes, point exchange and history."
+      "summary": "Your voucher collection: usable codes, point exchange and history."
     },
     "customer-voucher-detail": {
       "title": "Voucher details",
@@ -1163,6 +1139,14 @@
     "admin-settings-simulation": {
       "title": "Simulation & demo cluster",
       "summary": "Turn all simulation off for live operation and back on for demos — one button for every service."
+    },
+    "admin-audit-logs": {
+      "title": "Activity log",
+      "summary": "Who did what, and when: maintenance on, locker activated, technician assigned / removed, box faults, drone status, account locks, deletions…"
+    },
+    "admin-locker-audit": {
+      "title": "Locker activity log",
+      "summary": "On the locker page: who put this locker in maintenance, activated it, assigned / removed its technician, or faulted / reopened its boxes, and when."
     }
   },
   "steps": {
@@ -1260,7 +1244,7 @@
     },
     "drone-tech-home-shift": {
       "title": "Start and end shift",
-      "body": "Tap \"Start shift\" to begin your shift (location must be on); \"End shift\" ends it and also turns off pickup jobs. The locate button refreshes GPS; tap the card for GPS details and Google Maps."
+      "body": "Tap \"Start shift\" (location must be on) to take pickup jobs right away: the app opens the Dispatch tab and shows nearby orders to pick up. \"End shift\" stops pickup jobs; finish any accepted pickup first. The locate button refreshes GPS."
     },
     "drone-tech-home-hud": {
       "title": "Quick work tiles",
@@ -1360,7 +1344,7 @@
     },
     "drone-tech-dispatch-duty": {
       "title": "Pickup jobs",
-      "body": "Once on shift, turn the switch on to receive home-pickup invitations near you (location required; the app re-sends it every minute). While you have an invitation or unfinished job you get no more."
+      "body": "While on shift you take home-pickup jobs — there is no separate switch. Invitations and pickups in progress show right below; while you have an invitation or unfinished job you get no more."
     },
     "admin-maintenance-intro": {
       "title": "Maintenance page",
@@ -2088,19 +2072,15 @@
     },
     "admin-order-detail-info": {
       "title": "Order information",
-      "body": "The same rows the customer sees in the app: pickup deadline, expected pickup, recipient, delegate, overtime fee, incidents and past milestones."
-    },
-    "admin-order-detail-milestones": {
-      "title": "Milestones",
-      "body": "Created, paid, pickup deadline, actual pickup, completed, returned and last reminder. An empty cell means it has not happened yet."
+      "body": "The same rows the customer sees in the app, by order type: rentals show rental hours, rental end and when items were placed; deliveries show hold time, the receiver pickup deadline and when the sender dropped off; drone orders show the pickup deadline at the receiving locker, the sending locker and flight distance. Extra rows (completed, last reminder…) appear only when set, plus delegate, overdue fee, incidents and customer milestones."
     },
     "admin-order-detail-fees": {
       "title": "Fee breakdown",
-      "body": "Original price, reservation, storage, shipping, overtime fee, discount, loyalty points used and the total; plus the promotion codes applied."
+      "body": "Charges actually applied (original price, storage, shipping, overdue fee), discount, loyalty points used and the total; zero amounts are hidden. Plus the promotion codes applied."
     },
     "admin-order-detail-parcel": {
       "title": "Parcel & notes",
-      "body": "The customer's parcel declaration (description, category, weight, size, value), chosen services, customer / staff notes, next action and cancel reason."
+      "body": "The customer's parcel declaration, extra items, customer / staff notes, next action (while the order is open) and cancel reason. Hidden when there is nothing to show."
     },
     "admin-order-detail-history": {
       "title": "Status history",
@@ -2108,11 +2088,11 @@
     },
     "admin-order-detail-side-customer": {
       "title": "Customer",
-      "body": "The sender (name, phone, email, account status) and the recipient; if the recipient has a Lock.R account, that account is shown too."
+      "body": "The sender (renter for rentals) — name, phone, email, account status — and the recipient (not for rentals); if the recipient has a Lock.R account, that account is shown too."
     },
     "admin-order-detail-side-locker": {
       "title": "Locker & box",
-      "body": "Send / destination locker, address, send – receive – reserved box, store and contact phone. Expired orders show when the item went to storage plus \"Open stored items list\"; handed-over orders show the \"Handover record\"."
+      "body": "The locker, address and box of the order: deliveries use one box (the sender drops off and the receiver picks up from the same box), rentals show the rented box; plus store and contact phone. Expired orders show when the item went to storage plus \"Open stored items list\"; handed-over orders show the \"Handover record\"."
     },
     "admin-order-detail-side-code": {
       "title": "Pickup code",
@@ -2129,10 +2109,6 @@
     "admin-order-detail-side-refunds": {
       "title": "Order refunds",
       "body": "Each refund ticket: amount, status, reason, transaction id, request and processing time. Tickets are approved on the Refunds page."
-    },
-    "admin-order-detail-side-links": {
-      "title": "Links summary",
-      "body": "Locker, store, box numbers and order type in one place. All times on the page are Vietnam time, as in the customer app."
     },
     "admin-order-detail-drone-fees": {
       "title": "Drone order fees",
@@ -2200,7 +2176,7 @@
     },
     "admin-users-row-menu": {
       "title": "Row menu",
-      "body": "The \"…\" button: \"View Detail\", \"Wallet\" (view and adjust the balance) and \"Delete\" (reason required). To only block sign-in, flip the switch instead of deleting."
+      "body": "The \"…\" button: \"View Detail\" and \"Delete\" (reason required). To only block sign-in, flip the switch instead of deleting."
     },
     "admin-users-create-name": {
       "title": "First and last name",
@@ -2236,7 +2212,7 @@
     },
     "admin-user-detail-actions": {
       "title": "Actions",
-      "body": "\"Wallet\" opens the balance dialog; \"Technician profile\" (technicians only) opens their page; the badge shows Active / Locked. While you edit, this area turns into \"Cancel\" and \"Save changes\"."
+      "body": "\"Technician profile\" (technicians only) opens their page; the badge shows Active / Locked. While you edit, this area turns into \"Cancel\" and \"Save changes\"."
     },
     "admin-user-detail-avatar": {
       "title": "Avatar",
@@ -2260,31 +2236,11 @@
     },
     "admin-user-detail-stats": {
       "title": "Quick figures",
-      "body": "Orders and total spending over the last 12 months (money actually collected), wallet balance and current loyalty points."
-    },
-    "admin-user-wallet-open": {
-      "title": "Open the wallet",
-      "body": "Click \"Wallet\" on the profile (or \"Wallet\" in the list's \"…\" menu) to open the wallet dialog."
-    },
-    "admin-user-wallet-balance": {
-      "title": "Current balance",
-      "body": "The user's Lock.R wallet balance when the dialog opened."
-    },
-    "admin-user-wallet-amount": {
-      "title": "Adjustment amount",
-      "body": "Enter a positive amount in VND."
-    },
-    "admin-user-wallet-reason": {
-      "title": "Reason",
-      "body": "Optional, e.g. refund, promotion, correction — saved with the wallet movement."
-    },
-    "admin-user-wallet-actions": {
-      "title": "Add or deduct",
-      "body": "\"Add\" credits the wallet, \"Deduct\" debits it; the balance updates at once and a new line appears in the \"Wallet\" tab."
+      "body": "Orders and total spending over the last 12 months (money actually collected) and current loyalty points."
     },
     "admin-user-tab-orders-tabs": {
       "title": "Activity tabs",
-      "body": "Orders placed, orders received, payments, refunds, wallet, loyalty points, reviews, incident reports, notifications and AI assistant. The open tab is kept in the page address, so coming back lands in the same place."
+      "body": "Orders placed, orders received, payments, refunds, loyalty points, reviews, incident reports, notifications and AI assistant. The open tab is kept in the page address, so coming back lands in the same place."
     },
     "admin-user-tab-orders-panel": {
       "title": "Orders placed",
@@ -2296,15 +2252,7 @@
     },
     "admin-user-tab-payments-panel": {
       "title": "Transactions",
-      "body": "Click a payment code to open its details, click an order code to open the order; type (order / top-up), method, amount and status are shown. The \"Refunds\" tab next to it lists this user's refund tickets."
-    },
-    "admin-user-tab-wallet-tab": {
-      "title": "Wallet tab",
-      "body": "Click to see the user's wallet movements."
-    },
-    "admin-user-tab-wallet-panel": {
-      "title": "Wallet movements",
-      "body": "Source (top-up, order payment, refund, manual adjustment, withdrawal), credit / debit, amount, balance after, related order (click to open) and description."
+      "body": "Click a payment code to open its details, click an order code to open the order; method, amount and status are shown. The \"Refunds\" tab next to it lists this user's refund tickets."
     },
     "admin-user-tab-loyalty-tab": {
       "title": "Loyalty tab",
@@ -2344,15 +2292,11 @@
     },
     "admin-payments-breakdown": {
       "title": "By status / method",
-      "body": "Count and amount per status and per method (SePay transfer, SePay top-up, cash…). Click a row to filter the table."
-    },
-    "admin-payments-tabs": {
-      "title": "Three tabs",
-      "body": "\"Transactions\" lists every payment; \"Wallet Movements\" lists customer wallet credits / debits; \"Withdrawal Requests\" is where bank withdrawals are approved."
+      "body": "Count and amount per status and per method (SePay transfer, cash, legacy methods). Click a row to filter the table."
     },
     "admin-payments-list-filters": {
       "title": "Search and filter",
-      "body": "Search by reference, description, transaction id or order code; filter by status, method and kind (orders and top-ups / orders only / top-ups only) and choose the sort order."
+      "body": "Search by reference, description, transaction id or order code; filter by status and method and choose the sort order."
     },
     "admin-payments-list-dates": {
       "title": "Date range",
@@ -2382,77 +2326,13 @@
       "title": "Refunds",
       "body": "Refunds of this transaction: status, amount, reason, refund transaction id and who processed it. Creating a refund does not change the transaction status."
     },
-    "admin-payment-detail-wallet": {
-      "title": "Wallet movements",
-      "body": "Wallet credits / debits created by this transaction and the balance after."
-    },
     "admin-payment-detail-others": {
       "title": "Other payments of the order",
       "body": "Other payment attempts of the same order, e.g. an earlier failed one."
     },
     "admin-payment-detail-status": {
       "title": "Update status",
-      "body": "Pick a status and click \"Save status\". Locked for top-ups and for successful / failed transactions — to give money back, use Refunds."
-    },
-    "admin-payments-wallet-tab": {
-      "title": "Wallet Movements tab",
-      "body": "Click to see the wallet movements of all customers."
-    },
-    "admin-payments-wallet-filters": {
-      "title": "Search and filter",
-      "body": "Search by reference or content; filter by direction (credit / debit) and source (top-up, order payment, refund, manual adjustment, withdrawal)."
-    },
-    "admin-payments-wallet-dates": {
-      "title": "Date range",
-      "body": "Pick a range or preset; leave empty for all time."
-    },
-    "admin-payments-wallet-table": {
-      "title": "Movements table",
-      "body": "Movement and wallet id, customer, direction, source, amount (green credit / red debit) with balance after, related order (click to open), reference and time; with paging."
-    },
-    "admin-payments-withdrawals-tab": {
-      "title": "Withdrawal Requests tab",
-      "body": "Click to see the withdrawal requests."
-    },
-    "admin-payments-withdrawals-status": {
-      "title": "Status filter",
-      "body": "All, Pending (with the count waiting), Transferred, Rejected."
-    },
-    "admin-payments-withdrawals-search": {
-      "title": "Search and reload",
-      "body": "Search by code, name, account number or bank; the circular-arrow button reloads the list."
-    },
-    "admin-payments-withdrawals-table": {
-      "title": "Requests table",
-      "body": "Request code, customer, beneficiary (bank, account number, holder), amount, status, created / processed time and rejection reason."
-    },
-    "admin-payments-withdrawals-actions": {
-      "title": "Approve or reject",
-      "body": "Only pending requests have buttons. \"Approve\" after the real transfer is done (cannot be undone); \"Reject\" needs a reason and returns the money to the customer's wallet."
-    },
-    "admin-withdrawal-approve-info": {
-      "title": "Check the details",
-      "body": "Request code, amount, bank, account number and holder — check them before transferring."
-    },
-    "admin-withdrawal-approve-warning": {
-      "title": "Warning",
-      "body": "Approving marks the request as transferred and cannot be undone."
-    },
-    "admin-withdrawal-approve-actions": {
-      "title": "Confirm",
-      "body": "Click \"Confirm transfer & approve\" only once the money has been sent; \"Cancel\" goes back."
-    },
-    "admin-withdrawal-reject-info": {
-      "title": "Request being rejected",
-      "body": "The request code and the amount that will go back to the wallet."
-    },
-    "admin-withdrawal-reject-reason": {
-      "title": "Rejection reason",
-      "body": "Required, e.g. wrong account holder name; the customer sees it."
-    },
-    "admin-withdrawal-reject-actions": {
-      "title": "Confirm rejection",
-      "body": "\"Confirm rejection & refund wallet\" returns the amount to the wallet immediately."
+      "body": "Pick a status and click \"Save status\". Locked once a transaction has succeeded, failed or been refunded — to give money back, use Refunds."
     },
     "admin-refunds-header": {
       "title": "Shortcuts",
@@ -2808,11 +2688,11 @@
     },
     "admin-lockers-tech": {
       "title": "Assigned technician",
-      "body": "The technician in charge — click to open their page. \"Unassigned\" means fault tickets go to every cabinet technician."
+      "body": "The technician in charge — click to open their page. \"No technician\" means the locker takes NO new orders (send, rental, drone) until one is assigned."
     },
     "admin-lockers-boxes": {
       "title": "Boxes and free boxes",
-      "body": "Total boxes and free boxes; shows \"Under maintenance\" or \"Not accepting orders\" when the cabinet is paused."
+      "body": "Total boxes and free boxes; shows \"Under maintenance\", \"Not accepting orders\" or \"No technician · not taking orders\" when the locker is paused."
     },
     "admin-lockers-menu": {
       "title": "Actions menu",
@@ -3144,11 +3024,11 @@
     },
     "admin-locker-operations-tech": {
       "title": "Technician in charge",
-      "body": "Gets the cabinet fault tickets. \"Unassigned\" sends new tickets to every cabinet technician."
+      "body": "Gets the locker's fault tickets. A locker only takes new orders while it has a technician — \"Unassigned\" stops new orders."
     },
     "admin-locker-operations-select": {
       "title": "Change technician",
-      "body": "Pick a technician (locked ones are disabled) and press \"Save\"."
+      "body": "Pick a technician (locked ones are disabled) and press \"Save\". Choosing \"Unassigned\" asks again because the locker will stop taking new orders."
     },
     "admin-locker-operations-gps": {
       "title": "Location & GPS",
@@ -4159,8 +4039,8 @@
       "body": "Incident handling SLAs, penalty thresholds, acceptance photos, box holds and drones."
     },
     "admin-settings-scopes-payment": {
-      "title": "\"Payments & Wallet\"",
-      "body": "Wallet top-up limits, suggested amounts and payment methods."
+      "title": "\"Payments\"",
+      "body": "Payment methods, refunds and payment simulation."
     },
     "admin-settings-scopes-iot": {
       "title": "\"IoT Devices\"",
@@ -4460,7 +4340,7 @@
     },
     "customer-profile-vouchers": {
       "title": "Offers & gifts",
-      "body": "Open your voucher wallet: usable codes, exchanging points for vouchers, and used ones."
+      "body": "Open your voucher collection: usable codes, exchanging points for vouchers, and used ones."
     },
     "customer-loyalty-refresh": {
       "title": "Refresh",
@@ -4684,7 +4564,7 @@
     },
     "customer-transactions-filter": {
       "title": "Filter by method",
-      "body": "Filter the list: \"All methods\", \"SePay gateway\"; wallet, VNPay, MoMo and withdrawals only appear for old transactions."
+      "body": "Filter the list: \"All methods\", \"SePay gateway\"; older payment methods only appear for old transactions."
     },
     "customer-transactions-first": {
       "title": "A transaction",
@@ -4716,7 +4596,7 @@
     },
     "customer-vouchers-empty": {
       "title": "No vouchers yet",
-      "body": "Tap \"Explore offers and save codes\" to open Offers and save codes to your wallet."
+      "body": "Tap \"Explore offers and save codes\" to open Offers and save codes to your collection."
     },
     "customer-voucher-detail-ticket": {
       "title": "Voucher card",
@@ -4747,7 +4627,7 @@
       "body": "Tap the code chip to copy the promo code."
     },
     "customer-promotions-save": {
-      "title": "Save to wallet",
+      "title": "Save the code",
       "body": "Tap \"Save\" to add the code to \"My offers\"; it is marked used once applied to an order."
     },
     "customer-promotion-detail-ticket": {
@@ -7109,6 +6989,34 @@
     "admin-settings-simulation-confirm": {
       "title": "Confirm",
       "body": "The confirmation lists exactly which items will change before saving."
+    },
+    "admin-audit-logs-filters": {
+      "title": "Filter the log",
+      "body": "Search by person, locker code, drone or reason; filter by action group (maintenance, technician, boxes, drones, accounts, deletions), target type, people or system, and date range."
+    },
+    "admin-audit-logs-table": {
+      "title": "Each action",
+      "body": "Each row: when, who (with role; \"System\" means automatic), the action, the target (click to open the locker / drone / account) and the change from → to with the reason if any."
+    },
+    "admin-locker-audit-detail": {
+      "title": "Open the locker",
+      "body": "Open a locker's ⋯ menu and choose \"View details\"."
+    },
+    "admin-locker-audit-tab": {
+      "title": "Activity log tab",
+      "body": "Every action by people and the system on this locker and its boxes."
+    },
+    "admin-locker-audit-panel": {
+      "title": "Who did what, when",
+      "body": "Newest first: time, who, the action, the related box and the change from → to. Press refresh to load actions that just happened."
+    },
+    "admin-drone-detail-logs-audit": {
+      "title": "Drone activity log",
+      "body": "Who changed this drone's status (maintenance, fault, ready), assigned / removed its technician or moved its station, and when."
+    },
+    "admin-preferences-map-cache": {
+      "title": "Map cache",
+      "body": "Map tiles you have viewed are kept for 30 days in this browser, so maps open without reloading. See the size and press \"Clear cache\" when needed."
     }
   }
 }
